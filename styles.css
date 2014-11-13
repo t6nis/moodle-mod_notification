@@ -1,0 +1,6 @@
+.notificationbox {
+    border: 2px solid #ddd;
+}
+.notificationnotice {
+    font-style: italic;
+}
