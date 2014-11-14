@@ -75,12 +75,14 @@ $PAGE->set_context($context);
 echo $OUTPUT->header();
 
 // Conditions to show the intro can change to look for own settings or whatever.
-/*if ($notification->intro) {
+if ($notification->intro) {
     echo $OUTPUT->box(format_module_intro('notification', $notification, $cm->id), 'generalbox mod_introbox', 'notificationintro');
-}*/
+}
 
+/*
 echo $OUTPUT->box(html_writer::div($notification->title), 'generalbox mod_introbox notificationbox');
 echo $OUTPUT->box(html_writer::div($notification->body), 'generalbox mod_introbox notificationbox');
+*/
 
 // Finish the page.
 echo $OUTPUT->footer();

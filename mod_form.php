@@ -57,15 +57,16 @@ class mod_notification_mod_form extends moodleform_mod {
 
         // Adding the standard "intro" and "introformat" fields.
         $this->add_intro_editor();
-
+       
+        /*
         $mform->addElement('text', 'title', get_string('title', 'notification'), array('size' => '64'));
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addRule('title', null, 'required', null, 'client');
-        
-        $mform->addElement('textarea', 'body', get_string('body', 'notification'), 'wrap="virtual" rows="10" cols="70"');
-        $mform->addRule('body', null, 'required', null, 'client');
+        */
                 
+        $mform->addElement('textarea', 'emails', get_string('emails', 'notification'), 'wrap="virtual" rows="10" cols="70"');
+        $mform->addRule('emails', null, 'required', null, 'client');
         
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();

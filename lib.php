@@ -381,45 +381,64 @@ function notification_extend_settings_navigation(settings_navigation $settingsna
  * @global type $CFG
  * @param cm_info $cm
  */
-function mod_notification_cm_info_view(cm_info $cm) {
+function mod_notification_cm_info_dynamic(cm_info $cm) {
     global $USER, $DB, $CFG;
+    
+    $cm->set_after_link('(Hidden from students)');
     
     $availabilty_check = false;
     if (!is_null($cm->availability) && $cm->availability != '{"op":"&","c":[],"showc":[]}') {
         $availabilty_check = true; // Some condition must be set to send out e-mails.
     }
-
+    
     // If course module conditions are met.
     if ($cm->available && $availabilty_check) {
         // Check if message has been sent, if not send.
         $msg_sent = $DB->get_record('notifications_sent', array('notification' => $cm->instance, 'course' => $cm->course, 'user' => $USER->id), '*');
-
+        
         if (!$msg_sent && user_has_role_assignment($USER->id, 5)) {
             $notification = $DB->get_record('notification', array('id' => $cm->instance), '*', MUST_EXIST);
             
-            mail($USER->email, $notification->title, $notification->body);
-            /*
-            // Send Email via Mandrill
-            require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
-            $mandrill = new Mandrill();
+            $json = json_decode($cm->availability);            
+            foreach ($json->c as $key => $value) {
+                $modulename = $DB->get_record('grade_items', array('id' => $value->id), 'itemname');
+                $modulestring[] = $modulename->itemname; 
+            }
+            
+            $modules = implode(',', $modulestring);
+            
+            $vars = new stdClass();
+            $vars->firstname = $USER->firstname;
+            $vars->lastname = $USER->lastname;
+            $vars->modules = $modules;
 
-            $message = new stdClass();
-            $message->html = $notification->body;
-            $message->text = $notification->body;
-            $message->subject = $notification->title;
-            $message->from_email = "noreply@askfjashfas.asc";
-            $message->from_name  = "DevMoodle";
-            $message->to = array(array("email" => $USER->email));
-            $message->track_opens = true;
+            $emails = explode(',', $notification->emails);
+            foreach ($emails as $key => $value) {
+                
+                mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars));
+                /*
+                // Send Email via Mandrill
+                require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
+                $mandrill = new Mandrill();
 
-            $response = $mandrill->messages->send($message);
-            */
-            $msg = new stdClass();
-            $msg->course = $cm->course;
-            $msg->notification = $notification->id;
-            $msg->user = $USER->id;
-            $msg->timecreated = time();    
-            $DB->insert_record('notifications_sent', $msg);
+                $message = new stdClass();
+                $message->html = get_string('emailcontent', 'notification', $vars);
+                $message->text = get_string('emailcontent', 'notification', $vars);
+                $message->subject = get_string('emailsubject', 'notification');
+                $message->from_email = "noreply@askfjashfas.asc";
+                $message->from_name  = "DevMoodle";
+                $message->to = array(array("email" => $value));
+                $message->track_opens = true;
+
+                $response = $mandrill->messages->send($message);
+                */
+                $msg = new stdClass();
+                $msg->course = $cm->course;
+                $msg->notification = $notification->id;
+                $msg->user = $USER->id;
+                $msg->timecreated = time();    
+                $DB->insert_record('notifications_sent', $msg);
+            }
         }
     }
 }
