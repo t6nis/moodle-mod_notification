@@ -438,30 +438,31 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                     
                     if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
                         echo 'Could not send out mail! (mail functions not respond...)';
+                    } else {
+                        /*
+                        // Send Email via Mandrill
+                        require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
+                        $mandrill = new Mandrill('');
+
+                        $message = new stdClass();
+                        $message->html = get_string('emailcontent', 'notification', $vars);
+                        $message->text = get_string('emailcontent', 'notification', $vars);
+                        $message->subject = get_string('emailsubject', 'notification');
+                        $message->from_email = "noreply@askfjashfas.asc";
+                        $message->from_name  = "DevMoodle";
+                        $message->to = array(array("email" => $value));
+                        $message->track_opens = true;
+
+                        $response = $mandrill->messages->send($message);
+                        */
+                        $msg = new stdClass();
+                        $msg->course = $cm->course;
+                        $msg->notification = $notification->id;
+                        $msg->user = $USER->id;
+                        $msg->timecreated = time();    
+                        $DB->insert_record('notifications_sent', $msg); 
                     }
-                    /*
-                    // Send Email via Mandrill
-                    require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
-                    $mandrill = new Mandrill('');
 
-                    $message = new stdClass();
-                    $message->html = get_string('emailcontent', 'notification', $vars);
-                    $message->text = get_string('emailcontent', 'notification', $vars);
-                    $message->subject = get_string('emailsubject', 'notification');
-                    $message->from_email = "noreply@askfjashfas.asc";
-                    $message->from_name  = "DevMoodle";
-                    $message->to = array(array("email" => $value));
-                    $message->track_opens = true;
-
-                    $response = $mandrill->messages->send($message);
-                    */
-                    
-                    $msg = new stdClass();
-                    $msg->course = $cm->course;
-                    $msg->notification = $notification->id;
-                    $msg->user = $USER->id;
-                    $msg->timecreated = time();    
-                    $DB->insert_record('notifications_sent', $msg);
                 }
             }
         }
