@@ -149,7 +149,23 @@ function xmldb_notification_upgrade($oldversion) {
 
         upgrade_mod_savepoint(true, 2007040200, 'newmodule');
     }
+    
+    // Third example, the next day, 2007/04/02 (with the trailing 00),
+    // some actions were performed to install.php related with the module.
+    if ($oldversion < 2014111206) {
 
+        // Define field timemodified to be added to newmodule.
+        $table = new xmldb_table('notifications_sent');
+        $field = new xmldb_field('sentto', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'user');
+
+        // Add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        upgrade_mod_savepoint(true, 2014111206, 'notification');
+    }
+    
     /*
      * And that's all. Please, examine and understand the 3 example blocks above. Also
      * it's interesting to look how other modules are using this script. Remember that

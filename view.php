@@ -79,10 +79,21 @@ if ($notification->intro) {
     echo $OUTPUT->box(format_module_intro('notification', $notification, $cm->id), 'generalbox mod_introbox', 'notificationintro');
 }
 
-/*
-echo $OUTPUT->box(html_writer::div($notification->title), 'generalbox mod_introbox notificationbox');
-echo $OUTPUT->box(html_writer::div($notification->body), 'generalbox mod_introbox notificationbox');
-*/
+$sentmails = $DB->get_records('notifications_sent', array('notification' => $notification->id, 'course' => $course->id));
+
+$table = new html_table();
+$table->head  = array ('#', 'Username', 'Sent to');
+$table->data = array();
+$i = 1;
+foreach ($sentmails as $key => $value) {
+    $username = $DB->get_record('user', array('id' => $value->user), 'username');
+    $table->data[] = array($i, '<a href="'.$CFG->wwwroot.'/user/profile.php?id='.$value->user.'" target="_blank">'.$username->username.'</a>', $value->sentto, date('Y H:i:s', $value->timecreated));
+    $i++;
+}
+
+$table = html_writer::table($table);
+
+echo $OUTPUT->box(html_writer::div($table), 'generalbox mod_introbox notificationbox');
 
 // Finish the page.
 echo $OUTPUT->footer();

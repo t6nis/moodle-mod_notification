@@ -412,10 +412,14 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                         $mod = get_coursemodule_from_id($module1->name, $value->cm);
                         $modulestring[] = $mod->name;
                     } else if ($value->type == 'date'){
-                        $modulestring[] = $cm->name;
+                        if (!$cm->name) {
+                            $modulestring[] = '#Sorry! This condition is not configured yet.#';
+                        } else {
+                            $modulestring[] = $cm->name;
+                        }
                     } else {
                         if (!$value->cm) {
-                            $modulestring[] = '#Sorry! This condition is missing.#';
+                            $modulestring[] = '#Sorry! This condition is not configured yet.#';
                             continue;
                         } else {
                             $module = $DB->get_record('course_modules', array('id' => $value->cm), 'module');
@@ -434,10 +438,18 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                 $vars->modules = $modules;
 
                 $emails = explode(',', $notification->emails);
-                foreach ($emails as $key => $value) {                    
-                    
+                foreach ($emails as $key => $value) {
+                        $msg = new stdClass();
+                        $msg->course = $cm->course;
+                        $msg->notification = $notification->id;
+                        $msg->user = $USER->id;
+                        $msg->sentto = $value;
+                        $msg->timecreated = time(); 
+                        $DB->insert_record('notifications_sent', $msg);
+                        
                     if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
-                        echo 'Could not send out mail! (mail functions not respond...)';
+                        error_log('Moodle::Notification_mod::Could not send out mail! (mail() function returned false)');
+                        continue;
                     } else {
                         /*
                         // Send Email via Mandrill
@@ -459,10 +471,10 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                         $msg->course = $cm->course;
                         $msg->notification = $notification->id;
                         $msg->user = $USER->id;
-                        $msg->timecreated = time();    
+                        $msg->sentto = $value;
+                        $msg->timecreated = time(); 
                         $DB->insert_record('notifications_sent', $msg); 
                     }
-
                 }
             }
         }
