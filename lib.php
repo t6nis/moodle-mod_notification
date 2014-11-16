@@ -401,58 +401,31 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                 $notification = $DB->get_record('notification', array('id' => $cm->instance), '*', MUST_EXIST);
                 
                 $json = json_decode($cm->availability);
-                if (is_array($json->c)) {
-                    foreach ($json->c as $key => $value) {
-                        foreach ($value as $key1 => $value1) {
-                            if ($value1->type == 'grade') {
-                                $modulename = $DB->get_record('grade_items', array('id' => $value1->id), 'itemname');
-                                $modulestring[] = $modulename->itemname; 
-                            } else if ($value1->type == 'completion') {
-                                $module = $DB->get_record('course_modules', array('id' => $value1->cm), 'module');
-                                $module1 = $DB->get_record('modules', array('id' => $module->module));
-                                $mod = get_coursemodule_from_id($module1->name, $value1->cm);
-                                $modulestring[] = $mod->name;
-                            } else if ($value1->type == 'date'){
-                                $modulestring[] = $cm->name;
-                            } else {
-                                if (!$value1->cm) {
-                                    $modulestring[] = '#Sorry! This condition is missing.#';
-                                    continue;
-                                } else {
-                                    $module = $DB->get_record('course_modules', array('id' => $value1->cm), 'module');
-                                    $module1 = $DB->get_record('modules', array('id' => $module->module));
-                                    $mod = get_coursemodule_from_id($module1->name, $value1->cm);
-                                    $modulestring[] = $mod->name;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    foreach ($json->c as $key => $value) {
-                        if ($value->type == 'grade') {
-                            $modulename = $DB->get_record('grade_items', array('id' => $value->id), 'itemname');
-                            $modulestring[] = $modulename->itemname; 
-                        } else if ($value->type == 'completion') {
+                
+                foreach ($json->c as $key => $value) {
+                    if ($value->type == 'grade') {
+                        $modulename = $DB->get_record('grade_items', array('id' => $value->id), 'itemname');
+                        $modulestring[] = $modulename->itemname; 
+                    } else if ($value->type == 'completion') {
+                        $module = $DB->get_record('course_modules', array('id' => $value->cm), 'module');
+                        $module1 = $DB->get_record('modules', array('id' => $module->module));
+                        $mod = get_coursemodule_from_id($module1->name, $value->cm);
+                        $modulestring[] = $mod->name;
+                    } else if ($value->type == 'date'){
+                        $modulestring[] = $cm->name;
+                    } else {
+                        if (!$value->cm) {
+                            $modulestring[] = '#Sorry! This condition is missing.#';
+                            continue;
+                        } else {
                             $module = $DB->get_record('course_modules', array('id' => $value->cm), 'module');
                             $module1 = $DB->get_record('modules', array('id' => $module->module));
                             $mod = get_coursemodule_from_id($module1->name, $value->cm);
                             $modulestring[] = $mod->name;
-                        } else if ($value->type == 'date'){
-                            $modulestring[] = $cm->name;
-                        } else {
-                            if (!$value->cm) {
-                                $modulestring[] = '#Sorry! This condition is missing.#';
-                                continue;
-                            } else {
-                                $module = $DB->get_record('course_modules', array('id' => $value->cm), 'module');
-                                $module1 = $DB->get_record('modules', array('id' => $module->module));
-                                $mod = get_coursemodule_from_id($module1->name, $value->cm);
-                                $modulestring[] = $mod->name;
-                            }
                         }
                     }
                 }
-
+                
                 $modules = implode(',', $modulestring);
 
                 $vars = new stdClass();
