@@ -434,13 +434,15 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                 $vars->modules = $modules;
 
                 $emails = explode(',', $notification->emails);
-                foreach ($emails as $key => $value) {
-
-                    mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars));
+                foreach ($emails as $key => $value) {                    
+                    
+                    if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
+                        echo 'Could not send out mail! (mail functions not respond...)';
+                    }
                     /*
                     // Send Email via Mandrill
                     require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
-                    $mandrill = new Mandrill('lR40lIAPdBGo2mq8YQJe7w');
+                    $mandrill = new Mandrill('');
 
                     $message = new stdClass();
                     $message->html = get_string('emailcontent', 'notification', $vars);
@@ -452,6 +454,7 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                     $message->track_opens = true;
 
                     $response = $mandrill->messages->send($message);
+                    */
                     
                     $msg = new stdClass();
                     $msg->course = $cm->course;
@@ -459,7 +462,6 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                     $msg->user = $USER->id;
                     $msg->timecreated = time();    
                     $DB->insert_record('notifications_sent', $msg);
-                     */
                 }
             }
         }
