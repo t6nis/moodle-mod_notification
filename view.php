@@ -32,6 +32,7 @@ require_once(dirname(__FILE__).'/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... notification instance ID - it should be named as the first character of the module.
+$delete = optional_param('delete', 0, PARAM_INT);
 
 if ($id) {
     $cm         = get_coursemodule_from_id('notification', $id, 0, false, MUST_EXIST);
@@ -71,6 +72,15 @@ $PAGE->set_context($context);
  * $PAGE->add_body_class('notification-'.$somevar);
  */
 
+/**
+ * Delete action.
+ */
+if ($delete) {
+    if (!$DB->delete_records('notifications_sent', array('id' => $delete, 'notification' => $notification->id))) {
+        error_log('MOODLE::Notification::Tryed to delete undefined id('.$delete.')');
+    }
+}
+
 // Output starts here.
 echo $OUTPUT->header();
 
@@ -82,12 +92,12 @@ if ($notification->intro) {
 $sentmails = $DB->get_records('notifications_sent', array('notification' => $notification->id, 'course' => $course->id));
 
 $table = new html_table();
-$table->head  = array ('#', 'Username', 'Sent to');
+$table->head  = array ('#', 'Status', 'Username', 'Sent to', 'Time', 'Delete?');
 $table->data = array();
 $i = 1;
 foreach ($sentmails as $key => $value) {
     $username = $DB->get_record('user', array('id' => $value->user), 'username');
-    $table->data[] = array($i, '<a href="'.$CFG->wwwroot.'/user/profile.php?id='.$value->user.'" target="_blank">'.$username->username.'</a>', $value->sentto, date('Y H:i:s', $value->timecreated));
+    $table->data[] = array($i, $value->status, '<a href="'.$CFG->wwwroot.'/user/profile.php?id='.$value->user.'" target="_blank">'.$username->username.'</a>', $value->sentto, date('Y H:i:s', $value->timecreated), '<a href="'.new moodle_url('/mod/notification/view.php', array('id' => $id, 'delete' => $key)).'">Delete</a>');
     $i++;
 }
 

@@ -439,16 +439,17 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
 
                 $emails = explode(',', $notification->emails);
                 foreach ($emails as $key => $value) {
+
+                    if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
+                        error_log('Moodle::Notification_mod::Could not send out mail! (mail() function returned false)');
                         $msg = new stdClass();
                         $msg->course = $cm->course;
                         $msg->notification = $notification->id;
                         $msg->user = $USER->id;
                         $msg->sentto = $value;
+                        $msg->status = 'Failed';
                         $msg->timecreated = time(); 
-                        $DB->insert_record('notifications_sent', $msg);
-                        
-                    if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
-                        error_log('Moodle::Notification_mod::Could not send out mail! (mail() function returned false)');
+                        $DB->insert_record('notifications_sent', $msg); 
                         continue;
                     } else {
                         /*
@@ -472,6 +473,7 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                         $msg->notification = $notification->id;
                         $msg->user = $USER->id;
                         $msg->sentto = $value;
+                        $msg->status = 'Success';
                         $msg->timecreated = time(); 
                         $DB->insert_record('notifications_sent', $msg); 
                     }

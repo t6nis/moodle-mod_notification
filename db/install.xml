@@ -28,7 +28,8 @@
             <FIELD NAME="course" TYPE="int" LENGTH="10" SEQUENCE="false" NOTNULL="true" UNSIGNED="true" COMMENT="Course notification activity belongs to" PREVIOUS="id" NEXT="notification"/>
             <FIELD NAME="notification" TYPE="int" LENGTH="10" SEQUENCE="false" NOTNULL="true" UNSIGNED="true" COMMENT="Notification id" PREVIOUS="course" NEXT="user"/>
             <FIELD NAME="user" TYPE="int" LENGTH="10" SEQUENCE="false" NOTNULL="true" UNSIGNED="true" COMMENT="User that has been sent" PREVIOUS="notification" NEXT="sentto"/>
-            <FIELD NAME="sentto" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="sentto email" PREVIOUS="user" NEXT="timecreated"/>
+            <FIELD NAME="sentto" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="sentto email" PREVIOUS="user" NEXT="status"/>
+            <FIELD NAME="status" TYPE="char" LENGTH="255" SEQUENCE="false" COMMENT="email sent status" PREVIOUS="sentto" NEXT="timecreated" NOTNULL="true"/>
             <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Time sent" PREVIOUS="sentto"/>
         </FIELDS>
         <KEYS>

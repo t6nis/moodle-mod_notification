@@ -166,6 +166,19 @@ function xmldb_notification_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014111206, 'notification');
     }
     
+    if ($oldversion < 2014111207) {
+
+        // Define field timemodified to be added to newmodule.
+        $table = new xmldb_table('notifications_sent');
+        $field = new xmldb_field('status', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'sentto');
+
+        // Add field timemodified.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        
+        upgrade_mod_savepoint(true, 2014111207, 'notification');
+    }
     /*
      * And that's all. Please, examine and understand the 3 example blocks above. Also
      * it's interesting to look how other modules are using this script. Remember that
