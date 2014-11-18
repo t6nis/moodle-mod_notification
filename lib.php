@@ -382,7 +382,7 @@ function notification_extend_settings_navigation(settings_navigation $settingsna
  * @param cm_info $cm
  */
 function mod_notification_cm_info_dynamic(cm_info $cm) {
-    global $USER, $DB, $CFG;
+    global $USER, $DB, $CFG, $COURSE;
     
     if ($cm->modname == 'notification') { 
         $cm->set_after_link('(Hidden from students)');
@@ -396,12 +396,10 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
         if ($cm->available && $availabilty_check) {
             // Check if message has been sent, if not send.
             $msg_sent = $DB->get_records('notifications_sent', array('notification' => $cm->instance, 'course' => $cm->course, 'user' => $USER->id));
-
+            
             if (!$msg_sent && user_has_role_assignment($USER->id, 5)) {
                 $notification = $DB->get_record('notification', array('id' => $cm->instance), '*', MUST_EXIST);
-                
                 $json = json_decode($cm->availability);
-                
                 foreach ($json->c as $key => $value) {
                     if ($value->type == 'grade') {
                         $modulename = $DB->get_record('grade_items', array('id' => $value->id), 'itemname');
@@ -433,14 +431,22 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                 $modules = implode(',', $modulestring);
 
                 $vars = new stdClass();
+                $vars->username = $USER->username;
                 $vars->firstname = $USER->firstname;
                 $vars->lastname = $USER->lastname;
                 $vars->modules = $modules;
-
-                $emails = explode(',', $notification->emails);
+                $vars->course = $COURSE->fullname;
+                $admin = get_admin();
+                // To send HTML mail, the Content-type header must be set
+                $headers  = 'MIME-Version: 1.0' . "\r\n";
+                $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+                // Additional headers
+                $headers .= 'From:  '.$admin->firstname.' '.$admin->lastname.' <'.$admin->email.'>' . "\r\n";
+                
+                $emails = explode(',', $notification->emails); 
                 foreach ($emails as $key => $value) {
-
-                    if (!mail($value, get_string('emailsubject', 'notification'), get_string('emailcontent', 'notification', $vars))) {
+                    //@email_to_user($vars, $admin, get_string('emailsubject', 'notification', $vars), get_string('emailcontent', 'notification', $vars), ''); // If it fails, oh well too bad.
+                    if (!mail($value, get_string('emailsubject', 'notification', $vars), get_string('emailcontent', 'notification', $vars), $headers)) {
                         error_log('Moodle::Notification_mod::Could not send out mail! (mail() function returned false)');
                         $msg = new stdClass();
                         $msg->course = $cm->course;
@@ -452,22 +458,6 @@ function mod_notification_cm_info_dynamic(cm_info $cm) {
                         $DB->insert_record('notifications_sent', $msg); 
                         continue;
                     } else {
-                        /*
-                        // Send Email via Mandrill
-                        require_once $CFG->dirroot.'/mandrill/src/Mandrill.php';
-                        $mandrill = new Mandrill('');
-
-                        $message = new stdClass();
-                        $message->html = get_string('emailcontent', 'notification', $vars);
-                        $message->text = get_string('emailcontent', 'notification', $vars);
-                        $message->subject = get_string('emailsubject', 'notification');
-                        $message->from_email = "noreply@askfjashfas.asc";
-                        $message->from_name  = "DevMoodle";
-                        $message->to = array(array("email" => $value));
-                        $message->track_opens = true;
-
-                        $response = $mandrill->messages->send($message);
-                        */
                         $msg = new stdClass();
                         $msg->course = $cm->course;
                         $msg->notification = $notification->id;

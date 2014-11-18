@@ -41,5 +41,5 @@ $string['notification:view'] = 'View notification';
 $string['pluginadministration'] = 'Notification administration';
 $string['pluginname'] = 'Notification';
 $string['emails'] = 'E-mails';
-$string['emailsubject'] = 'Completion notification!';
+$string['emailsubject'] = 'Completion notification from {$a->firstname} {$a->lastname} on course {$a->course}!';
 $string['emailcontent'] = 'User {$a->firstname} {$a->lastname} has completed {$a->modules}!';
